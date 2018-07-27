@@ -1,4 +1,4 @@
-# Building
+# Build & Run
 
 First you need to download the training data and update the DATA_PATH and NNET_PATH in tinn.config
 
@@ -6,13 +6,11 @@ First you need to download the training data and update the DATA_PATH and NNET_P
     
 Build the executable 
     
-    make
+    make <flags>
 
 Run the executable
 
     ./tinn <path_to_config>
-
-# Running
 
 # Training Data Info
 The training data consists of hand written digits written both slowly and quickly.
@@ -32,3 +30,16 @@ At the end of the line 10 digits signify the hand written digit:
 This gives 10 outputs to the neural network. The test program will output the
 accuracy for each digit. Expect above 99% accuracy for the correct digit, and
 less that 0.1% accuracy for the other digits.
+
+# Terminology
+- HIDDEN_LAYER_NODES - The number of nodes in the single hidden layer between the input and output
+- DATA_LINES - The number of lines in the data file (excluding the last newline)
+- NUM_INPUTS - The number of inputs in the neural net
+- NUM_OUTPUTS - The number of outputs in the neural net
+- TRAIN_ITERATIONS - The number of training iterations that will be run
+- DATA_PATH - The path to the desired data file
+- NNET_PATH - The path to the desired file containing neural net weights and biases
+- ANNEAL - The change in learning rate applied after each training iteration
+- LEARNING_RATE - The rate at which weights are adjusted 
+- LOAD_EXISTING - YES=Load existing neural network  NO=Create new neural network
+- TRAIN_EXISTING - YES=Train the network NO=Continue without training the network
