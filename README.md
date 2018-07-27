@@ -27,11 +27,9 @@ At the end of the line 10 digits signify the hand written digit:
     ...
     9: 0 0 0 0 0 0 0 0 0 1
 
-This gives 10 outputs to the neural network. The test program will output the
-accuracy for each digit. Expect above 99% accuracy for the correct digit, and
-less that 0.1% accuracy for the other digits.
+This format can be used to train and test on any other data set.  
 
-# Terminology
+# Config File Terminology
 - HIDDEN_LAYER_NODES - The number of nodes in the single hidden layer between the input and output
 - DATA_LINES - The number of lines in the data file (excluding the last newline)
 - NUM_INPUTS - The number of inputs in the neural net
