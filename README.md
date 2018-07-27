@@ -1,6 +1,6 @@
 # Building
 
-First you need to download the training data and update the DATA_PATH in tinn.config
+First you need to download the training data and update the DATA_PATH and NNET_PATH in tinn.config
 
     wget http://archive.ics.uci.edu/ml/machine-learning-databases/semeion/semeion.data
     
