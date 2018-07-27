@@ -23,33 +23,26 @@ Data;
 // Returns the number of lines in a file.
 static int lns(FILE* const file)
 {
-    int ch = EOF;
-    int lines = 0;
-    int pc = '\n';
-    while((ch = getc(file)) != EOF)
-    {
-        if(ch == '\n')
-            lines++;
-        pc = ch;
+    int length = 0;
+    int error = fscanf(file, " %d\n", &length);
+    if (error == -1) {
+	printf("First line is not formatted correctly\n");
+	exit(1);
     }
-    if(pc != '\n')
-        lines++;
-    rewind(file);
-    return lines;
+    return length;
 }
 
 // Reads a line from a file.
-static char* readln(FILE* const file)
+static char* readln(FILE* const file, int* size, char* line)
 {
     int ch = EOF;
     int reads = 0;
-    int size = 128;
-    char* line = (char*) malloc((size) * sizeof(char));
+    
     while((ch = getc(file)) != '\n' && ch != EOF)
     {
         line[reads++] = ch;
-        if(reads + 1 == size)
-            line = (char*) realloc((line), (size *= 2) * sizeof(char));
+        if(reads + 1 == *size)
+            line = (char*) realloc((line), (*size *= 2) * sizeof(char));
     }
     line[reads] = '\0';
     return line;
@@ -79,7 +72,7 @@ static void parse(const Data data, char* line, const int row)
     const int cols = data.nips + data.nops;
     for(int col = 0; col < cols; col++)
     {
-        const float val = atof(strtok(col == 0 ? line : NULL, " "));
+        const float val = 1.0f*(line[col]-'0');
         if(col < data.nips)
             data.in[row][col] = val;
         else
@@ -129,12 +122,15 @@ static Data build(const char* path, const int nips, const int nops)
     }
     const int rows = lns(file);
     Data data = ndata(nips, nops, rows);
+    int size = 128;
+    char* line = (char*) malloc((size) * sizeof(char));
     for(int row = 0; row < rows; row++)
-    {
-        char* line = readln(file);
+        {
+        line = readln(file, &size, line);
         parse(data, line, row);
-        free(line);
+     
     }
+    free(line);
     fclose(file);
     return data;
 }
