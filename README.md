@@ -1,19 +1,18 @@
-![](img/logo.PNG)
+# Build & Run
 
-Tinn (Tiny Neural Network) is a 200 line dependency free neural network library written in C99.
-
-For a demo on how to learn hand written digits, get some training data:
+First you need to download the training data and update the DATA_PATH and NNET_PATH in tinn.config
 
     wget http://archive.ics.uci.edu/ml/machine-learning-databases/semeion/semeion.data
+    
+Build the executable 
+    
+    make <flags>
 
-And if you're on Linux / MacOS just build and run Tinn with the test file:
+Run the executable
 
-    make; ./tinn
+    ./tinn <path_to_config>
 
-If you're on Windows it's:
-
-    mingw32-make & tinn.exe
-
+# Training Data Info
 The training data consists of hand written digits written both slowly and quickly.
 Each line in the data set corresponds to one handwritten digit. Each digit is 16x16 pixels in size
 giving 256 inputs to the neural network.
@@ -28,48 +27,17 @@ At the end of the line 10 digits signify the hand written digit:
     ...
     9: 0 0 0 0 0 0 0 0 0 1
 
-This gives 10 outputs to the neural network. The test program will output the
-accuracy for each digit. Expect above 99% accuracy for the correct digit, and
-less that 0.1% accuracy for the other digits.
+This format can be used to train and test on any other data set.  
 
-# Features
-
-* Portable - Runs on Windows, MacOS, Linux, and embedded chips like ARM, AVR, and Microchip
-
-* Sigmoidal activation.
-
-* One hidden layer.
-
-# Tips
-
-* Tinn will never use more than the C standard library.
-
-* Tinn is great for embedded systems. Train a model on your powerful desktop and load
-it onto a microcontroller and use the analog to digital converter to predict real time events.
-
-* The Tinn source code will always be less than 200 lines. Functions externed in the Tinn header
-are protected with the _xt_ namespace standing for _externed tinn_.
-
-* Tinn can easily be multi-threaded with a bit of ingenuity but the master branch will remain
-single threaded to aid development for embedded systems.
-
-* Tinn does not seed the random number generator. Do not forget to do so yourself.
-
-* Always shuffle your input data. Shuffle again after every training iteration.
-
-* Get greater training accuracy by annealing your learning rate. For instance, multiply
-your learning rate by 0.99 every training iteration. This will zero in on a good learning minima.
-
-# Disclaimer
-
-Tinn is a practice in minimalism.
-
-Tinn is not a fully featured neural network C library like Kann, or Genann:
-
-    https://github.com/attractivechaos/kann
-
-    https://github.com/codeplea/genann
-
-# Ports
-
-    Rust: https://github.com/dvdplm/rustinn
+# Config File Terminology
+- HIDDEN_LAYER_NODES - The number of nodes in the single hidden layer between the input and output
+- DATA_LINES - The number of lines in the data file (excluding the last newline)
+- NUM_INPUTS - The number of inputs in the neural net
+- NUM_OUTPUTS - The number of outputs in the neural net
+- TRAIN_ITERATIONS - The number of training iterations that will be run
+- DATA_PATH - The path to the desired data file
+- NNET_PATH - The path to the desired file containing neural net weights and biases
+- ANNEAL - The change in learning rate applied after each training iteration
+- LEARNING_RATE - The rate at which weights are adjusted 
+- LOAD_EXISTING - YES=Load existing neural network  NO=Create new neural network
+- TRAIN_EXISTING - YES=Train the network NO=Continue without training the network
