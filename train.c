@@ -3,10 +3,10 @@
 #include <time.h>
 #include <string.h>
 #include <stdlib.h>
+#include <stdbool.h>
 
 // Data object.
-typedef struct
-{
+typedef struct {
     // 2D floating point array of input.
     float** in;
     // 2D floating point array of target.
@@ -20,26 +20,12 @@ typedef struct
 }
 Data;
 
-// Returns the number of lines in a file.
-static int lns(FILE* const file)
-{
-    int length = 0;
-    int error = fscanf(file, " %d\n", &length);
-    if (error == -1) {
-	printf("First line is not formatted correctly\n");
-	exit(1);
-    }
-    return length;
-}
-
 // Reads a line from a file.
-static char* readln(FILE* const file, int* size, char* line)
-{
+static char* readln(FILE* const file, int* size, char* line) {
     int ch = EOF;
     int reads = 0;
-    
-    while((ch = getc(file)) != '\n' && ch != EOF)
-    {
+
+    while((ch = getc(file)) != '\n' && ch != EOF) {
         line[reads++] = ch;
         if(reads + 1 == *size)
             line = (char*) realloc((line), (*size *= 2) * sizeof(char));
@@ -49,8 +35,7 @@ static char* readln(FILE* const file, int* size, char* line)
 }
 
 // New 2D array of floats.
-static float** new2d(const int rows, const int cols)
-{
+static float** new2d(const int rows, const int cols) {
     float** row = (float**) malloc((rows) * sizeof(float*));
     for(int r = 0; r < rows; r++)
         row[r] = (float*) malloc((cols) * sizeof(float));
@@ -58,8 +43,7 @@ static float** new2d(const int rows, const int cols)
 }
 
 // New data object.
-static Data ndata(const int nips, const int nops, const int rows)
-{
+static Data ndata(const int nips, const int nops, const int rows) {
     const Data data = {
         new2d(rows, nips), new2d(rows, nops), nips, nops, rows
     };
@@ -67,11 +51,9 @@ static Data ndata(const int nips, const int nops, const int rows)
 }
 
 // Gets one row of inputs and outputs from a string.
-static void parse(const Data data, char* line, const int row)
-{
+static void parse(const Data data, char* line, const int row) {
     const int cols = data.nips + data.nops;
-    for(int col = 0; col < cols; col++)
-    {
+    for(int col = 0; col < cols; col++) {
         const float val = 1.0f*(line[col]-'0');
         if(col < data.nips)
             data.in[row][col] = val;
@@ -81,10 +63,8 @@ static void parse(const Data data, char* line, const int row)
 }
 
 // Frees a data object from the heap.
-static void dfree(const Data d)
-{
-    for(int row = 0; row < d.rows; row++)
-    {
+static void dfree(const Data d) {
+    for(int row = 0; row < d.rows; row++) {
         free(d.in[row]);
         free(d.tg[row]);
     }
@@ -93,10 +73,8 @@ static void dfree(const Data d)
 }
 
 // Randomly shuffles a data object.
-static void shuffle(const Data d)
-{
-    for(int a = 0; a < d.rows; a++)
-    {
+static void shuffle(const Data d) {
+    for(int a = 0; a < d.rows; a++) {
         const int b = rand() % d.rows;
         float* ot = d.tg[a];
         float* it = d.in[a];
@@ -110,25 +88,22 @@ static void shuffle(const Data d)
 }
 
 // Parses file from path getting all inputs and outputs for the neural network. Returns data object.
-static Data build(const char* path, const int nips, const int nops)
-{
+static Data build(const char* path, const int nips, const int nops, int rows) {
     FILE* file = fopen(path, "r");
-    if(file == NULL)
-    {
+    if(file == NULL) {
         printf("Could not open %s\n", path);
         printf("Get it from the machine learning database: ");
         printf("wget http://archive.ics.uci.edu/ml/machine-learning-databases/semeion/semeion.data\n");
+        printf("Check file path in config file\n");
         exit(1);
     }
-    const int rows = lns(file);
     Data data = ndata(nips, nops, rows);
     int size = 128;
     char* line = (char*) malloc((size) * sizeof(char));
-    for(int row = 0; row < rows; row++)
-        {
+    for(int row = 0; row < rows; row++) {
         line = readln(file, &size, line);
         parse(data, line, row);
-     
+
     }
     free(line);
     fclose(file);
@@ -136,61 +111,101 @@ static Data build(const char* path, const int nips, const int nops)
 }
 
 // Learns and predicts hand written digits with 98% accuracy.
-int main()
-{
-    // Tinn does not seed the random number generator.
-    srand(time(0));
-    // Input and output size is harded coded here as machine learning
-    // repositories usually don't include the input and output size in the data itself.
-    const int nips = 256;
-    const int nops = 10;
-    // Hyper Parameters.
-    // Learning rate is annealed and thus not constant.
-    // It can be fine tuned along with the number of hidden layers.
-    // Feel free to modify the anneal rate.
-    // The number of iterations can be changed for stronger training.
+int main(int argc, char** argv) {
+
+    // Set default values
+    int nhid = 28;
+    int dataLines = 1593;
+    int nips = 256;
+    int nops = 10;
+    int iterations = 128;
+    char dataPath[256] = "semeion.data";
+    char nnetPath[256] = "saved.tinn";
+    float anneal = 0.99f;
     float rate = 1.0f;
-    const int nhid = 28;
-    const float anneal = 0.99f;
-    const int iterations = 128;
-    // Load the training set.
-    const Data data = build("semeion.data", nips, nops);
-    // Train, baby, train.
-    const Tinn tinn = xtbuild(nips, nhid, nops);
-    for(int i = 0; i < iterations; i++)
-    {
-        shuffle(data);
-        float error = 0.0f;
-        for(int j = 0; j < data.rows; j++)
-        {
-            const float* const in = data.in[j];
-            const float* const tg = data.tg[j];
-            error += xttrain(tinn, in, tg, rate);
+    bool loadExisting = false;
+    bool trainExisting = false;
+
+    char arg[256];
+    char val[256];
+
+    // Parse config file;
+    FILE* file = fopen(argv[1], "r");
+    while(fscanf(file, "%s = %s\n", &arg, &val) != -1) {
+        if(strcmp(arg, "HIDDEN_LAYER_NODES") == 0) {
+            nhid = atoi(val);
+        } else if(strcmp(arg, "DATA_LINES") == 0) {
+            dataLines = atoi(val);
+        } else if(strcmp(arg, "NUM_INPUTS") == 0) {
+            nips = atoi(val);
+        } else if(strcmp(arg, "NUM_OUTPUTS") == 0) {
+            nops = atoi(val);
+        } else if(strcmp(arg, "TRAIN_ITERATIONS") == 0) {
+            iterations = atoi(val);
+        } else if(strcmp(arg, "DATA_PATH") == 0) {
+            memcpy(&dataPath, &val, 256);
+        } else if(strcmp(arg, "NNET_PATH") == 0) {
+            memcpy(&nnetPath, &val, 256);
+        } else if(strcmp(arg, "ANNEAL") == 0) {
+            anneal = atof(val);
+        } else if(strcmp(arg, "LEARNING_RATE") == 0) {
+            rate = atof(val);
+        } else if(strcmp(arg, "LOAD_EXISTING") == 0) {
+            if (strcmp(val, "YES") == 0) {
+                loadExisting = true;
+            } else {
+                loadExisting = false;
+            }
+        } else if(strcmp(arg, "TRAIN_EXISTING") == 0) {
+            if (strcmp(val, "YES") == 0) {
+                trainExisting = true;
+            } else {
+                trainExisting = false;
+            }
         }
-        printf("error %.12f :: learning rate %f\n",
-            (double) error / data.rows,
-            (double) rate);
-        rate *= anneal;
     }
-    // This is how you save the neural network to disk.
-    xtsave(tinn, "saved.tinn");
-    xtfree(tinn);
-    // This is how you load the neural network from disk.
-    const Tinn loaded = xtload("saved.tinn");
-    // Now we do a prediction with the neural network we loaded from disk.
-    // Ideally, we would also load a testing set to make the prediction with,
-    // but for the sake of brevity here we just reuse the training set from earlier.
-    // One data set is picked at random (zero index of input and target arrays is enough
-    // as they were both shuffled earlier).
+
+    srand(time(0));
+    // Load the training set
+    Data data = build(dataPath, nips, nops, dataLines);
+    Tinn tinn;
+    if (loadExisting) {
+        // Load neural network
+        tinn = xtload(nnetPath);
+    } else {
+        // Build neural network
+        tinn = xtbuild(nips, nhid, nops);
+    }
+
+    if (trainExisting || !loadExisting) {
+        for(int i = 0; i < iterations; i++) {
+            shuffle(data);
+            float error = 0.0f;
+            for(int j = 0; j < data.rows; j++) {
+                const float* const in = data.in[j];
+                const float* const tg = data.tg[j];
+                error += xttrain(tinn, in, tg, rate);
+            }
+            printf("error %.12f :: learning rate %f\n",
+                (double) error / data.rows,
+                (double) rate);
+            rate *= anneal;
+        }
+        xtsave(tinn, nnetPath);
+    }
+    
+    shuffle(data);
     const float* const in = data.in[0];
     const float* const tg = data.tg[0];
-    const float* const pd = xtpredict(loaded, in);
-    // Prints target.
+    const float* const pd = xtpredict(tinn, in);
+
+    // Prints target
     xtprint(tg, data.nops);
-    // Prints prediction.
+    // Prints prediction
     xtprint(pd, data.nops);
+
     // All done. Let's clean up.
-    xtfree(loaded);
+    xtfree(tinn);
     dfree(data);
     return 0;
 }
