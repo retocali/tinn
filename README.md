@@ -1,12 +1,8 @@
 # Build & Run
-
-First you need to download the training data and update the DATA_PATH and NNET_PATH in tinn.config
-
-    wget http://archive.ics.uci.edu/ml/machine-learning-databases/semeion/semeion.data
     
 Build the executable 
     
-    make <flags>
+    make
 
 Run the executable
 
@@ -41,3 +37,4 @@ This format can be used to train and test on any other data set.
 - LEARNING_RATE - The rate at which weights are adjusted 
 - LOAD_EXISTING - YES=Load existing neural network  NO=Create new neural network
 - TRAIN_EXISTING - YES=Train the network NO=Continue without training the network
+- MANUAL_TESTING - YES=Test network manually NO=Automatically test all of training set
