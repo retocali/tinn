@@ -1,6 +1,9 @@
 *.txt
 *.o
-*.d*
+*.dla
+*.dle
+*.dbo
+*.dnm
 tinn
 nn.py
 *.tinn
