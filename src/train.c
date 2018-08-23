@@ -346,6 +346,7 @@ int main(int argc, char** argv) {
     // Train network
     if (c.trainExisting || !c.loadExisting) {
         printf("Training neural network for %d iterations\n", c.iterations);
+	int j = 0;
         for(int i = 0; i < c.iterations; i++) {
             shuffle(data);
             float error = 0.0f;
@@ -355,10 +356,11 @@ int main(int argc, char** argv) {
                 error += xttrain(tinn, in, tg, c.rate);
             }
             printf("iteration %d :: error %.12f :: learning rate %f\n",
-                c.iterations,
+                j,
                 (double) error / data.rows,
                 (double) c.rate);
             c.rate *= c.anneal;
+	    j++;
         }
         printf("Saving neural network at %s\n", c.nnetPath);
         xtsave(tinn, c.nnetPath);
